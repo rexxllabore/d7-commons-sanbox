@@ -7,3 +7,6 @@ sites/*/private
 
 # Ignore my local site
 sites/d7-commons.dev
+
+# Ignore my komodo specific files
+*.komodoproject
