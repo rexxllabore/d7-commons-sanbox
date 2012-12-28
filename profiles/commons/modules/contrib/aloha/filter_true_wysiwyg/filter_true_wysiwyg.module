@@ -2,84 +2,30 @@
 
 /**
  * @file
- * Proposed modifications to Drupal core's filter module.
+ * Backport of Drupal 8 core filter module improvements.
  */
-
-
 
 
 /**
- * @defgroup filter_modifications Proposed modified Filter API.
- *
- * @see http://drupal.org/node/807996#comment-6302188
- *
- * @{
+ * Non-HTML markup language filters that generate HTML.
  */
+const FILTER_TYPE_MARKUP_LANGUAGE = 0;
 
 /**
- * HTML generator filters -- MUST generate HTML.
- *
- * Formats using filters of this type may not be able to use WYSIWYG editors.
- *
- * WYSIWYG use case: ability to detect non-HTML formats, such as Markdown, where
- * no WYSIWYG editor should be used because it would be impossible to go back to
- * the original text format.
+ * HTML tag and attribute restricting filters.
  */
-define('FILTER_TYPE_HTML_GENERATOR', 'html generator');
+const FILTER_TYPE_HTML_RESTRICTOR = 1;
 
 /**
- * Security filters -- strip HTML tags that the user MAY NOT use.
- *
- * WYSIWYG use case: all filters of this type MUST be applied, the user MAY NOT
- * be presented processed text without all filters of this type. Security
- * exploits might otherwise occur.
+ * Reversible transformation filters.
  */
-define('FILTER_TYPE_SECURITY', 'security');
+const FILTER_TYPE_TRANSFORM_REVERSIBLE = 2;
 
 /**
- * DOM transformation filters -- DOM-based, reliably reversible transformations.
- *
- * Filters SHOULD NOT use regular expressions when they can use DOM manipulation
- * instead. This makes filters as robust as possible.
- *
- * WYSIWYG use case: these filters MUST NOT be applied when feeding a piece of
- * text into the WYSIWYG editor. Instead, they MAY be re-implemented in
- * JavaScript for each supported WYSIWYG editor.
- * E.g. `<img data-caption="Druplicon">` may be (reversibly!) transformed to
- * `<figure><img><figcaption>Druplicon</figcaption></figure>`.
+ * Irreversible transformation filters.
  */
-define('FILTER_TYPE_TRANSFORM_DOM', 'DOM transformation');
+const FILTER_TYPE_TRANSFORM_IRREVERSIBLE = 3;
 
-/**
- * Text transformation filters -- text-based, irreversible transformations.
- *
- * WYSIWYG use case: these filters MUST NOT be applied when feeding a piece of
- * text into the WYSIWYG editor. Furthermore, they MUST NOT be re-implemented
- * in JavaScript.
- * E.g.: the Typogrify filter would transform `WYSIWYG` and `I said "foo"!` into
- * `<span class="caps">WYSIWYG</span>` and `I said “foo”!`, respectively. Text
- * link ad systems would transform `fancy car` into something like
- * `<a href="http://fancycar.com">fancy car</a>`. Neither of those text-based
- * transformations make sense when doing WYSIWYG editing, nor is it possible to
- * reliably reverse them.
- */
-define('FILTER_TYPE_TRANSFORM_TEXT', 'text transformation');
-
-/**
- * All of the above implies:
- * - if a format uses >=1 filters of type FILTER_TYPE_HTML_GENERATOR, no WYSIWYG
- *   editor can be used.
- * - if a format uses >=1 filters of type FILTER_TYPE_SECURITY, and a user saves
- *   modified text through his WYSIWYG editor, any disallowed tags will be lost.
- *   This seems like a minor annoyance and appears acceptable.
- * - if a format uses >=1 filters of type FILTER_TYPE_TRANSFORM_TEXT, these
- *   transformations will not be visible while editing, but will be visible when
- *   viewing.
- * - if a format uses >=1 filters of type FILTER_TYPE_TRANSFORM_DOM, these
- *   transformations may not be visible while editing (it is up to the filter to
- *   implement support for the WYSIWYG editor, by re-implementing the filtering
- *   in JavaScript), but will be visible when viewing.
- */
 
 /**
  * Implements hook_filter_info_alter().
@@ -91,22 +37,22 @@ function filter_true_wysiwyg_filter_info_alter(&$info) {
   /* CORE */
   if (module_exists('php')) {
     // php.module
-    $info['php_code']['type'] = FILTER_TYPE_HTML_GENERATOR;
+    $info['php_code']['type'] = FILTER_TYPE_MARKUP_LANGUAGE;
   }
   // filter.module
-  $info['filter_autop'         ]['type'] = FILTER_TYPE_HTML_GENERATOR;
-  $info['filter_url'           ]['type'] = FILTER_TYPE_HTML_GENERATOR;
-  $info['filter_html_escape'   ]['type'] = FILTER_TYPE_HTML_GENERATOR;
-  $info['filter_html'          ]['type'] = FILTER_TYPE_SECURITY;
-  $info['filter_htmlcorrector' ]['type'] = FILTER_TYPE_SECURITY; // This filter would be implicit in the proposed solution.
+  $info['filter_autop'         ]['type'] = FILTER_TYPE_MARKUP_LANGUAGE;
+  $info['filter_url'           ]['type'] = FILTER_TYPE_MARKUP_LANGUAGE;
+  $info['filter_html_escape'   ]['type'] = FILTER_TYPE_MARKUP_LANGUAGE;
+  $info['filter_html'          ]['type'] = FILTER_TYPE_HTML_RESTRICTOR;
+  $info['filter_htmlcorrector' ]['type'] = FILTER_TYPE_HTML_RESTRICTOR;
 
   /* CONTRIB */
   $contrib_filter_type = array(
     // image_resize_filter.module
-    'image_resize_filter' => FILTER_TYPE_TRANSFORM_DOM,
-    'filter_markdown' => FILTER_TYPE_HTML_GENERATOR,
+    'image_resize_filter' => FILTER_TYPE_TRANSFORM_REVERSIBLE,
+    'filter_markdown' => FILTER_TYPE_MARKUP_LANGUAGE,
     // typogrify.module
-    'typogrify' => FILTER_TYPE_TRANSFORM_TEXT,
+    'typogrify' => FILTER_TYPE_TRANSFORM_IRREVERSIBLE,
   );
 
   foreach ($contrib_filter_type as $filter => $type) {
@@ -122,10 +68,10 @@ function filter_true_wysiwyg_filter_info_alter(&$info) {
  * filters that match any filter type in a list of filter types
  *
  * @param array $filter_types_to_skip
- *   An array of filter types to skip, or the empty array (default) to skip no
- *   filter types. All of the format's filters will be applied, except for
- *   filters of the types that are marked to be skipped. FILTER_TYPE_SECURITY is
- *   the only type that cannot be skipped.
+ *   (optional) An array of filter types to skip, or an empty array (default)
+ *   to skip no filter types. All of the format's filters will be applied,
+ *   except for filters of the types that are marked to be skipped.
+ *   FILTER_TYPE_HTML_RESTRICTOR is the only type that cannot be skipped.
  *
  * @see aloha.module/aloha_filter_info_alter()
  */
@@ -139,9 +85,9 @@ function check_markup2($text, $format_id = NULL, $langcode = '', $cache = FALSE,
     return '';
   }
 
-  // Prevent FILTER_TYPE_SECURITY from being skipped.
-  if (in_array(FILTER_TYPE_SECURITY, $filter_types_to_skip)) {
-    $filter_types_to_skip = array_diff($filter_types_to_skip, array(FILTER_TYPE_SECURITY));
+  // Prevent FILTER_TYPE_HTML_RESTRICTOR from being skipped.
+  if (in_array(FILTER_TYPE_HTML_RESTRICTOR, $filter_types_to_skip)) {
+    $filter_types_to_skip = array_diff($filter_types_to_skip, array(FILTER_TYPE_HTML_RESTRICTOR));
   }
 
   // When certain filters should be skipped, don't perform caching.
@@ -170,7 +116,7 @@ function check_markup2($text, $format_id = NULL, $langcode = '', $cache = FALSE,
   // Give filters the chance to escape HTML-like data such as code or formulas.
   foreach ($filters as $name => $filter) {
     // If necessary, skip filters of a certain type.
-    if ($filter->status && $filter_types_to_skip && isset($filter_info[$name]['type']) && in_array($filter_info[$name]['type'], $filter_types_to_skip)) {
+    if (in_array($filter_info[$name]['type'], $filter_types_to_skip)) {
       continue;
     }
     if ($filter->status && isset($filter_info[$name]['prepare callback']) && function_exists($filter_info[$name]['prepare callback'])) {
@@ -182,7 +128,7 @@ function check_markup2($text, $format_id = NULL, $langcode = '', $cache = FALSE,
   // Perform filtering.
   foreach ($filters as $name => $filter) {
     // If necessary, skip filters of a certain type.
-    if ($filter->status && $filter_types_to_skip && isset($filter_info[$name]['type']) && in_array($filter_info[$name]['type'], $filter_types_to_skip)) {
+    if (in_array($filter_info[$name]['type'], $filter_types_to_skip)) {
       continue;
     }
     if ($filter->status && isset($filter_info[$name]['process callback']) && function_exists($filter_info[$name]['process callback'])) {
@@ -219,6 +165,7 @@ function check_markup2($text, $format_id = NULL, $langcode = '', $cache = FALSE,
  *
  * @param string $format_id
  *   A text format ID.
+ *
  * @return array
  *   All filter types used by filters of a given text format.
  */
@@ -232,23 +179,17 @@ function filter_get_filter_types_by_format($format_id) {
     return $filter->status;
   });
 
-  $filters_metadata = filter_get_filters();
+  $filters_info = filter_get_filters();
   foreach ($filters as $filter) {
-    // @todo: Remove the fallback for when no filter type is defined. We don't
-    // fail, we just ignore these right now.
-    $type = FALSE;
-    if (empty($filters_metadata[$filter->name]['type'])) {
+    if (!isset($filters_info[$filter->name]['type'])) {
       drupal_set_message(t('Filter !filter has no type specified!', array('!filter' => $filter->name)), 'error');
+      continue;
     }
-    else {
-      $type = $filters_metadata[$filter->name]['type'];
-    }
-    if ($type && !in_array($type, $filter_types)) {
-      $filter_types[] = $type;
-    }
+
+    $filter_types[] = $filters_info[$filter->name]['type'];
   }
 
-  return $filter_types;
+  return array_unique($filter_types);
 }
 
 /**

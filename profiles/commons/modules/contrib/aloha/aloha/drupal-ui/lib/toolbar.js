@@ -78,7 +78,7 @@ define([
      * Shows the toolbar.
      */
     show: function () {
-      if (Toolbar.renderOwnToolbarContainer) {
+      if (!this._hasCustomToolbarLocation()) {
         var $textarea = Aloha.activeEditable.obj.closest('.aloha-textarea');
         Aloha.jQuery('.edit-toolbar-container .edit-toolbar.tertiary .edit-toolgroup.wysiwyg')
           .width($textarea.width() + 8);
@@ -103,7 +103,7 @@ define([
      * Hides the toolbar.
      */
     hide: function () {
-      if (Toolbar.renderOwnToolbarContainer) {
+      if (!this._hasCustomToolbarLocation()) {
         Toolbar.$toolbarSurfaceContainer.stop().fadeOut(200, function () {
           Toolbar.$toolbarSurfaceContainer
             .detach()
@@ -115,14 +115,20 @@ define([
           .add(Toolbar.$handlesSurfaceContainer)
           .stop().fadeOut(200, function () {
             // Move the toolbar surface into its original location again.
-            Toolbar.$panelsSurfaceContainer
-              .detach()
-              .appendTo('body');
             Toolbar.$handlesSurfaceContainer
               .detach()
-              .appendTo('body');
+              .appendTo(Toolbar.$toolbarSurfaceContainer)
+              .show();
+            Toolbar.$panelsSurfaceContainer
+              .detach()
+              .appendTo(Toolbar.$toolbarSurfaceContainer)
+              .show();
           });
       }
+    },
+
+    _hasCustomToolbarLocation: function() {
+      return Aloha.activeEditable.obj.attr('data-edit-aloha-toolbar-custom-location') !== undefined;
     }
   });
 
@@ -143,7 +149,8 @@ define([
      */
     $toolbarSurfaceContainer: null,
 
-    // @todo: get rid of this by fixing AE plug-ins that incorrectly assume this exists!
+    // @todo: POST_COMMIT(Aloha Editor, https://github.com/alohaeditor/Aloha-Editor/issues/747)
+    // Get rid of this: fix AE plug-ins that incorrectly assume this exists!
     $surfaceContainer: $([]),
 
     /**
@@ -162,40 +169,28 @@ define([
         'unselectable': 'on'
       }).hide();
 
-      Toolbar.renderOwnToolbarContainer = Aloha.settings &&
-        Aloha.settings.DrupalUI &&
-        Aloha.settings.DrupalUI.renderOwnToolbarContainer === true;
 
-      if (Toolbar.renderOwnToolbarContainer) {
-        Toolbar.$toolbarSurfaceContainer = $('<div>', {
-          'class': 'aloha-surface aloha-toolbar',
-          'unselectable': 'on'
-        })
-          .append(Toolbar.$handlesSurfaceContainer)
-          .append(Toolbar.$panelsSurfaceContainer)
-          .hide();
-        Toolbar.$handlesSurfaceContainer.removeClass('aloha-surface').show();
-        Toolbar.$panelsSurfaceContainer.removeClass('aloha-surface').show();
-      }
+      Toolbar.$toolbarSurfaceContainer = $('<div>', {
+        'class': 'aloha-surface aloha-toolbar',
+        'unselectable': 'on'
+      })
+        .append(Toolbar.$handlesSurfaceContainer)
+        .append(Toolbar.$panelsSurfaceContainer)
+        .hide();
+      Toolbar.$handlesSurfaceContainer.removeClass('aloha-surface').show();
+      Toolbar.$panelsSurfaceContainer.removeClass('aloha-surface').show();
 
       // In the built aloha.js, init will happend before the body has
       // finished loading, so we have to defer appending the element.
       $(function () {
-        if (Toolbar.renderOwnToolbarContainer) {
-          Toolbar.$toolbarSurfaceContainer.appendTo('body');
-        }
-        else {
-          Toolbar.$panelsSurfaceContainer.appendTo('body');
-          Toolbar.$handlesSurfaceContainer.appendTo('body');
-        }
+        Toolbar.$toolbarSurfaceContainer.appendTo('body');
       });
-      if (Toolbar.renderOwnToolbarContainer) {
-        Surface.trackRange(Toolbar.$toolbarSurfaceContainer);
-      }
-      else {
-        Surface.trackRange(Toolbar.$panelsSurfaceContainer);
-        Surface.trackRange(Toolbar.$handlesSurfaceContainer);
-      }
+      Surface.trackRange(Toolbar.$toolbarSurfaceContainer);
+
+      // Unnecessary when the UI renders itself completely, but essential when
+      // the toolbar must be rendered into a custom location.
+      Surface.trackRange(Toolbar.$panelsSurfaceContainer);
+      Surface.trackRange(Toolbar.$handlesSurfaceContainer);
     }
   });
 

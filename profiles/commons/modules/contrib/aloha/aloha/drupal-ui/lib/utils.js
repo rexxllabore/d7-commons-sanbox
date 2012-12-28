@@ -132,9 +132,7 @@ define(['jquery', 'jqueryui'], function ($) {
             .map(function (c) { return (!imgPlugin) ? 'aloha-icon-' + c : ' aloha-' + c; })
             .join(' ');
           primaryIcon
-            .removeClass('ui-icon')
-            .removeClass('aloha-icon')
-            .removeClass(removeClassNames)
+            .removeClass('ui-icon aloha-icon ' + removeClassNames)
             .addClass('spark-icon')
             .attr('data-html-tag', className)
             .attr('data-icon', Utils.getDataIconForClassName(className));

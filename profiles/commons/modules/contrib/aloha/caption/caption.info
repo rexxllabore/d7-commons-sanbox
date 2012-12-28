@@ -3,9 +3,9 @@ description = Create captions and align images.
 package = Input filters
 core = 7.x
 
-; Information added by drupal.org packaging script on 2012-10-31
-version = "7.x-2.0-alpha1+16-dev"
+; Information added by drupal.org packaging script on 2012-12-06
+version = "7.x-2.0-alpha1+32-dev"
 core = "7.x"
 project = "aloha"
-datestamp = "1351686842"
+datestamp = "1354754035"
 

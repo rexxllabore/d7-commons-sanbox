@@ -45,6 +45,10 @@
           user-select: none;
 }
 
+.aloha-surface .ui-button {
+  cursor: pointer;
+}
+
 .aloha-surface .aloha-toolbar .ui-autocomplete-input {
   -webkit-user-select: text;
    -khtml-user-select: text;
@@ -402,8 +406,11 @@
  * Custom UI for common/block.
  */
 
-/* @todo Temporarily disable Aloha Blocks' handles, because the CaptionedImage
-         plug-in can't deal yet with dragging images into an alignment. */
+/*
+ * @todo POST_COMMIT(Aloha Editor, https://github.com/alohaeditor/Aloha-Editor/issues/685)
+ * Temporarily disable Aloha Blocks' handles, because the CaptionedImage plug-in
+ * can't deal yet with dragging images into an alignment.
+ */
 .aloha-block-handle {
   background: none;
   border: none;

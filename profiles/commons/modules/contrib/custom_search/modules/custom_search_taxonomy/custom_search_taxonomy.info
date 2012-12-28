@@ -12,9 +12,9 @@ files[] = custom_search_taxonomy.install
 
 configure = admin/config/search/custom_search/taxonomy
 
-; Information added by drush on 2012-11-15
-version = "7.x-1.11+0-dev"
+; Information added by drush on 2012-12-20
+version = "7.x-1.11+2-dev"
 core = "7.x"
 project = "custom_search"
-datestamp = "1353011156"
+datestamp = "1355964977"
 

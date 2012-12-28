@@ -117,7 +117,7 @@ function custom_search_form_alter(&$form, &$form_state, $form_id) {
           foreach ($vocabularies as $voc) {
             if (!variable_get('custom_search_advanced_voc' . $voc->vid . '_display', TRUE)) unset($form['advanced']['category']['#options'][$voc->name]);
           }
-          if (isset($form['advanced']['category']) && !count($form['advanced']['category']['#options'])) $form['advanced']['category']['#type'] = 'hidden';
+          if (isset($form['advanced']['category']) && !count($form['advanced']['category']['#options'])) unset($form['advanced']['category']['#type']);
         }
 
         // Content types
@@ -125,7 +125,7 @@ function custom_search_form_alter(&$form, &$form_state, $form_id) {
         foreach ($names as $name) {
           if (!variable_get('custom_search_advanced_type_' . $name . '_display', TRUE)) unset($form['advanced']['type']['#options'][$name]);
         }
-        if (!count($form['advanced']['type']['#options'])) $form['advanced']['type']['#type'] = 'hidden';
+        if (!count($form['advanced']['type']['#options'])) unset($form['advanced']['type']['#type']);
 
         if (!variable_get('custom_search_results_search', TRUE)) {
           // If basic search is hidden, original search terms are imported into advanced search.
@@ -374,6 +374,12 @@ function custom_search_submit($form, &$form_state) {
 
   // Integrates other search modules
   if (module_exists('apachesolr_search')) {
+    for ($i=0; $i<count($types); $i++) {
+      // Remove the item from the array if it's not a content type.
+      if (!in_array($types[$i], array_keys(node_type_get_types()))) {
+        unset($types[$i]);
+      }
+    }
     $search_path = _custom_search_apachesolr_search(array(
       'keywords'  => $original_keywords,
       'types'     => $types,

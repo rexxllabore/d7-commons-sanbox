@@ -211,7 +211,7 @@ Drupal.aloha = {
 
       // Populate the div with the value of the textarea and hide the textarea.
       $div
-        .css('height', $editable.height()) // @todo: make the height of the div resizable, like it is for textareas.
+        .css('height', $editable.height())
         .html($editable.val());
       $editable.hide();
     }

@@ -65,6 +65,14 @@ function og_ui_admin_settings($form_state) {
     }
   }
 
+  $form['og_features_ignore_og_fields'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Prevent "Features" export piping'),
+    '#description' => t('When exporting using Features module a content-type, this will prevent from OG related fields to be exported.'),
+    '#default_value' => variable_get('og_features_ignore_og_fields', FALSE),
+    '#access' => module_exists('features'),
+  );
+
   return system_settings_form($form);
 }
 
@@ -220,8 +228,8 @@ function og_ui_add_users_submit($form, &$form_state) {
   $og_membership->etid = $account->uid;
   $og_membership->state = $state;
   $og_membership->save();
-
-  drupal_set_message(t('%user has been added to group.', array('%user' => format_username($account))));
+  $group = node_load($gid);
+  drupal_set_message(t('%user has been added to the group %group-title.', array('%user' => format_username($account), '%group-title' => $group->title)));
 }
 
 /**

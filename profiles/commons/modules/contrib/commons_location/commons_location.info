@@ -11,8 +11,8 @@ features[features_api][] = api:1
 features[field_base][] = field_address
 
 
-; Information added by drush on 2012-11-15
+; Information added by drush on 2012-12-20
 version = ""
 project = "commons_location"
-datestamp = "1353011134"
+datestamp = "1355964939"
 

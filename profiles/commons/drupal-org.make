@@ -6,14 +6,26 @@ core = 7.x
 projects[addressfield][type] = "module"
 projects[addressfield][subdir] = "contrib"
 
+projects[acquia_connector][type] = "module"
+projects[acquia_connector][subdir] = "contrib"
+
+projects[advancedqueue][type] = "module"
+projects[advancedqueue][subdir] = "contrib"
+
 projects[aloha][version] = "2.x-dev"
 projects[aloha][type] = "module"
 projects[aloha][subdir] = "contrib"
 
+projects[apachesolr][type] = "module"
+projects[apachesolr][subdir] = "contrib"
+
+projects[apachesolr_og][version] = "1.x-dev"
+projects[apachesolr_og][type] = "module"
+projects[apachesolr_og][subdir] = "contrib"
+
 projects[connector][version] = "1.x-dev"
 projects[connector][type] = "module"
 projects[connector][subdir] = "contrib"
-
 
 projects[ctools][type] = "module"
 projects[ctools][subdir] = "contrib"
@@ -29,6 +41,9 @@ projects[custom_search][download][branch] = "7.x-1.x"
 projects[date][type] = "module"
 projects[date][subdir] = "contrib"
 
+projects[date_facets][type] = "module"
+projects[date_facets][subdir] = "contrib"
+
 projects[devel][version] = "1.x-dev"
 projects[devel][type] = "module"
 projects[devel][subdir] = "contrib"
@@ -43,9 +58,18 @@ projects[email_registration][subdir] = "contrib"
 projects[entity][type] = "module"
 projects[entity][subdir] = "contrib"
 
+projects[entitycache][type] = "module"
+projects[entitycache][subdir] = "contrib"
+
 projects[entityreference][version] = "1.x-dev"
 projects[entityreference][type] = "module"
 projects[entityreference][subdir] = "contrib"
+
+projects[edit_profile][type] = "module"
+projects[edit_profile][subdir] = "contrib"
+projects[edit_profile][download][type] = "git"
+projects[edit_profile][download][url] = "http://git.drupal.org/project/edit_profile.git"
+projects[edit_profile][download][branch] = "7.x-1.x"
 
 projects[entityreference_prepopulate][type] = "module"
 projects[entityreference_prepopulate][subdir] = "contrib"
@@ -66,6 +90,9 @@ projects[flag_abuse][subdir] = "contrib"
 projects[flag_abuse][download][type] = "git"
 projects[flag_abuse][download][url] = "http://git.drupal.org/project/flag_abuse.git"
 projects[flag_abuse][download][branch] = "7.x-2.x"
+
+projects[redirect][type] = "module"
+projects[redirect][subdir] = "contrib"
 
 projects[http_client][version] = "2.x-dev"
 projects[http_client][type] = "module"
@@ -103,6 +130,15 @@ projects[message_subscribe][download][url] = "http://git.drupal.org/project/mess
 projects[message_subscribe][download][branch] = "7.x-1.x"
 projects[message_subscribe][subdir] = "contrib"
 
+projects[memcache][type] = "module"
+projects[memcache][subdir] = "contrib"
+
+projects[metatag][type] = "module"
+projects[metatag][subdir] = "contrib"
+; Support for rel=author link in head
+; http://drupal.org/node/1865228#comment-6839604
+projects[metatag][patch][] = "http://drupal.org/files/metatag-n1865228-3.patch"
+
 projects[module_filter][type] = "module"
 projects[module_filter][subdir] = "contrib"
 
@@ -117,6 +153,9 @@ projects[oauthconnector][subdir] = "contrib"
 projects[og][version] = "2.x-dev"
 projects[og][type] = "module"
 projects[og][subdir] = "contrib"
+; Language tweak for 'user has been added to [group]'
+; http://drupal.org/node/1842830
+projects[og][patch][] = "http://drupal.org/files/og-add-group-message.patch"
 
 projects[panelizer][type] = "module"
 projects[panelizer][version] = "3.x-dev"
@@ -128,17 +167,39 @@ projects[panels][subdir] = "contrib"
 ; http://drupal.org/node/1828684#comment-6694732
 projects[panels][patch][] = "http://drupal.org/files/1828684-layout-fix-6.patch"
 
-projects[queue_mail][type] = "module"
-projects[queue_mail][subdir] = "contrib"
+; PHP 5.3.9 Strict Warning on Panels Empty Value
+; http://drupal.org/node/1632898#comment-6412840
+projects[panels][patch][] = "http://drupal.org/files/panels-n1632898-15.patch"
+
+projects[pathauto][type] = "module"
+projects[pathauto][subdir] = "contrib"
+
+projects[pm_existing_pages][type] = "module"
+projects[pm_existing_pages][subdir] = "contrib"
 
 projects[quicktabs][type] = "module"
 projects[quicktabs][subdir] = "contrib"
+projects[quicktabs][version] = "3.x-dev"
 
 projects[radioactivity][type] = "module"
 projects[radioactivity][subdir] = "contrib"
+projects[radioactivity][download][type] = "git"
+projects[radioactivity][download][branch] = "7.x-2.x"
+projects[radioactivity][download][url] = "http://git.drupal.org/project/radioactivity.git"
+
 ; Notice error for accessing an undefined array element
 ; http://drupal.org/node/1816252#comment-6617208
 projects[radioactivity][patch][] = "http://drupal.org/files/undefined_array-1816252-1.patch"
+
+; Radioactivity not compatible with Memcache module
+; http://drupal.org/node/1860216
+projects[radioactivity][patch][] = "http://drupal.org/files/radioactivity-memcache.patch"
+
+projects[r4032login][type] = "module"
+projects[r4032login][subdir] = "contrib"
+
+projects[rate][type] = "module"
+projects[rate][subdir] = "contrib"
 
 projects[realname][type] = "module"
 projects[realname][subdir] = "contrib"
@@ -149,6 +210,15 @@ projects[registration][subdir] = "contrib"
 
 projects[rules][type] = "module"
 projects[rules][subdir] = "contrib"
+
+projects[search_facetapi][type] = "module"
+projects[search_facetapi][subdir] = "contrib"
+
+projects[sharethis][type] = "module"
+projects[sharethis][subdir] = "contrib"
+
+projects[facetapi][type] = "module"
+projects[facetapi][subdir] = "contrib"
 
 projects[strongarm][version] = "2.x-dev"
 projects[strongarm][type] = "module"
@@ -179,6 +249,9 @@ projects[views_load_more][subdir] = "contrib"
 
 projects[views_bulk_operations][type] = "module"
 projects[views_bulk_operations][subdir] = "contrib"
+
+projects[views_litepager][type] = "module"
+projects[views_litepager][subdir] = "contrib"
 
 projects[votingapi][type] = "module"
 projects[votingapi][subdir] = "contrib"
@@ -277,7 +350,7 @@ projects[commons_posts][download][branch] = "7.x-3.x"
 
 projects[commons_profile_base][type] = "module"
 projects[commons_profile_base][subdir] = "contrib"
-projects[commons_profile_base][version] = "2.x-dev"
+projects[commons_profile_base][version] = "3.x-dev"
 
 projects[commons_profile_social][type] = "module"
 projects[commons_profile_social][subdir] = "contrib"
@@ -285,12 +358,23 @@ projects[commons_profile_social][download][type] = "git"
 projects[commons_profile_social][download][url] = "http://git.drupal.org/project/commons_profile_social.git"
 projects[commons_profile_social][download][branch] = "7.x-3.x"
 
+projects[commons_q_a][type] = "module"
+projects[commons_q_a][subdir] = "contrib"
+projects[commons_q_a][download][type] = "git"
+projects[commons_q_a][download][url] = "http://git.drupal.org/project/commons_q_a.git"
+projects[commons_q_a][download][branch] = "7.x-3.x"
+
 projects[commons_radioactivity][type] = "module"
 projects[commons_radioactivity][subdir] = "contrib"
 projects[commons_radioactivity][download][type] = "git"
 projects[commons_radioactivity][download][url] = "http://git.drupal.org/project/commons_radioactivity.git"
 projects[commons_radioactivity][download][branch] = "7.x-3.x"
 
+projects[commons_like][type] = "module"
+projects[commons_like][subdir] = "contrib"
+projects[commons_like][download][type] = "git"
+projects[commons_like][download][url] = "http://git.drupal.org/project/commons_like.git"
+projects[commons_like][download][branch] = "7.x-3.x"
 
 projects[commons_search][type] = "module"
 projects[commons_search][subdir] = "contrib"
@@ -303,6 +387,12 @@ projects[commons_site_homepage][subdir] = "contrib"
 projects[commons_site_homepage][download][type] = "git"
 projects[commons_site_homepage][download][url] = "http://git.drupal.org/project/commons_site_homepage.git"
 projects[commons_site_homepage][download][branch] = "7.x-3.x"
+
+projects[commons_utility_links][type] = "module"
+projects[commons_utility_links][subdir] = "contrib"
+projects[commons_utility_links][download][type] = "git"
+projects[commons_utility_links][download][url] = "http://git.drupal.org/project/commons_utility_links.git"
+projects[commons_utility_links][download][branch] = "7.x-3.x"
 
 projects[commons_user_profile_pages][type] = "module"
 projects[commons_user_profile_pages][subdir] = "contrib"
@@ -335,9 +425,9 @@ projects[adaptivetheme][subdir] = "contrib"
 projects[adaptivetheme][download][type] = "git"
 projects[adaptivetheme][download][url] = "http://git.drupal.org/project/adaptivetheme.git"
 projects[adaptivetheme][download][branch] = "7.x-3.x"
-; Refactor require_once() instances into discrete functions:
-; http://drupal.org/node/1776730#comment-6705274
-projects[adaptivetheme][patch][] = "http://drupal.org/files/1776730-adaptivetheme-refactor-require-into-discrete-functions-21.patch"
+projects[adaptivetheme][download][revision] = "8e46acc"
+
+
 
 projects[sky][type] = "theme"
 projects[sky][subdir] = "contrib"

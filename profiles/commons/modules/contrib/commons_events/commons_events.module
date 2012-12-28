@@ -33,6 +33,26 @@ function commons_events_attendee_access($event_node) {
 }
 
 /**
+ * Implements hook_views_default_views_alter().
+ */
+function commons_events_views_default_views_alter(&$views) {
+  if (isset($views['commons_bw_all'])) {
+    // Events aren't meant to display on the group browswing widget because
+    // they have their own landing page.
+    $views['commons_bw_all']->display['default']->display_options['filters']['type']['id'] = 'type';
+    $views['commons_bw_all']->display['default']->display_options['filters']['type']['table'] = 'node';
+    $views['commons_bw_all']->display['default']->display_options['filters']['type']['field'] = 'type';
+    $views['commons_bw_all']->display['default']->display_options['filters']['type']['operator'] = 'not in';
+    if (!isset($views['commons_bw_all']->display['default']->display_options['filters']['type']['value'])) {
+      $views['commons_bw_all']->display['default']->display_options['filters']['type']['value'] = array('event' => 'event');
+    }
+    else {
+      $views['commons_bw_all']->display['default']->display_options['filters']['type']['value']['event'] = 'event';
+    }
+  }
+}
+
+/**
  * Page callback for full event attendee listing.
  */
 function commons_events_event_attendees_page($event_node) {
@@ -171,6 +191,18 @@ function commons_events_form_node_form_alter(&$form, &$form_state) {
 }
 
 /**
+ * Implements hook_commons_entity_integration.
+ */
+function commons_events_commons_entity_integration() {
+  return array(
+    'node' => array(
+      'event' => array(
+      ),
+    ),
+  );
+}
+
+/**
  * Custom node form validation handler.
  */
 function commons_events_node_form_validate($form, &$form_state) {
@@ -227,6 +259,24 @@ function commons_events_token_info_alter(&$tokens) {
 }
 
 /**
+ * Implements hook_commons_bw_create_all_widget().
+ */
+function commons_events_commons_bw_create_all_widget($group) {
+   if (og_user_access('node', $group->nid, 'create event content')) {
+      $link = l('List an event','node/add/event',
+      array('attributes' => array('class' => 'commons-events-create'), 'query' => array('og_group_ref' => $group->nid))
+    );
+    return array(
+      'commons_events' => array(
+        'link' => $link,
+        'text' => t('Create in-person or online meetups'),
+        '#weight' => 6,
+      ),
+    );
+  }
+}
+
+/**
  * Implements hook_tokens().
  */
 function commons_events_tokens($type, $tokens, array $data = array(), array $options = array()) {
@@ -242,30 +292,25 @@ function commons_events_tokens($type, $tokens, array $data = array(), array $opt
   return $replacements;
 }
 
-/**
-* Implements hook_strongarm_alter().
-*/
- function commons_events_strongarm_alter(&$items) {
-  // Expose the Post content type for 'liking' via the Commons_like module
-  // by altering the configuration for the Rate.module widget that it provides.
-  if (!empty($items['rate_widgets']->value)) {
-    foreach($items['rate_widgets']->value as $key => $widget) {
-      if ($widget->name == 'commons_like') {
-        if (!in_array('event', $items['rate_widgets']->value[$key]->node_types)) {
-          $items['rate_widgets']->value[$key]->node_types[] = 'event';
-        }
-        if (!in_array('event', $items['rate_widgets']->value[$key]->comment_types)) {
-          $items['rate_widgets']->value[$key]->comment_types[] = 'event';
-        }
-      }
-    }
+function commons_events_views_more_link($group) {
+  $path = 'events';
+  if (module_exists('commons_events_solr')) {
+    $options = array('query' => array('f[0]' => 'sm_og_group_ref:node:' . $group));
   }
-  // Expose the post content type for integration with Commons Radioactivity
-  // and Commons Groups.
-  foreach (array('commons_radioactivity_entity_types', 'commons_groups_entity_types') as $key) {
-    if (isset($items[$key])) {
-      $items[$key]->value['node']['event'] = 1;
-    }
-  }
+  return l(t('more'), $path, $options);
 }
 
+function og_search_facetapi_field_mappings() {
+  return array(
+    'entityreference' => array(
+      'query type' => 'term',
+      'facet mincount allowed' => TRUE,
+      'map callback' => 'og_map_callback',
+    ),
+  );
+}
+
+function og_map_callback($values) {
+  $map = array(1 => "Hi");
+  return $map;
+}

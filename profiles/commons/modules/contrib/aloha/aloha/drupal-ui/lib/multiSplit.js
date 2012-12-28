@@ -35,15 +35,11 @@ define([
       jQuery.each(this.buttons, function (i, button) {
         var text = button.name.toUpperCase();
 
-        // @todo: this is a quick hack to remove the "remove formatting" button
-        // from the p/h1/... dropdown; we want it to live elsewhere.
+        // @todo: POST_COMMIT(Aloha Editor, https://github.com/alohaeditor/Aloha-Editor/issues/747)
+        // This is a quick hack to remove the "remove formatting" button from
+        // the p/h1/... dropdown; we want it to live elsewhere.
         if (button.name === "removeFormat") {
           return;
-        }
-
-        // @todo: fix this upstream; this is a typo in AE.
-        if (button.tooltip === 'Pre formated text') {
-          button.tooltip = "Preformatted text";
         }
 
         // In Drupal's UI, we don't have "large icons". Rename the class name so
@@ -52,7 +48,8 @@ define([
         menuItems.push({
           text: button.tooltip,
           icon: button.icon,
-          click: button.click
+          click: button.click,
+          name: button.name
         });
       });
 
@@ -65,8 +62,51 @@ define([
 
       // Ensure the button is shown/hidden depending on the current selection.
       this.element = formatMenuButton.element;
-      this.setActiveButton('p'); // @todo: don't make this assumption!
+      this.items = formatMenuButton.items;
+      // @todo: POST_COMMIT(Aloha Editor, https://github.com/alohaeditor/Aloha-Editor/issues/747)
+      // Don't make this assumption! Aloha Editor's UI should pass us the
+      // necessary information.
+      this.setActiveButton('p');
       Surface.trackRange(this.element);
+    },
+
+    show: function (name) {
+      if (!name) {
+        name = null;
+      }
+      if (null !== name && this.items[name] !== undefined) {
+        this.items[name].element.show();
+        this.items[name].visible = true;
+        // since we show at least one button now, we need to show the multisplit button
+        this.element.show();
+      }
+    },
+
+    hide: function (name) {
+      var item, visible = false;
+
+      if (!name) {
+        name = null;
+      }
+      if (null !== name && this.items[name] !== undefined) {
+        this.items[name].element.hide();
+        this.items[name].visible = false;
+
+        // now check, if there is a visible button
+        for (item in this.items) {
+          if (this.items.hasOwnProperty(item)) {
+            if (this.items[item].visible) {
+              this.element.show();
+              visible = true;
+              break;
+            }
+          }
+        }
+
+        if (!visible) {
+          this.element.hide();
+        }
+      }
     },
 
     setActiveButton: function (index) {

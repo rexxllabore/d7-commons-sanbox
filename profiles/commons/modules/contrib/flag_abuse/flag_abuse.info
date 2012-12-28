@@ -6,9 +6,9 @@ dependencies[] = views
 core = 7.x
 
 
-; Information added by drush on 2012-11-15
+; Information added by drush on 2012-12-20
 version = "7.x-2.0-alpha1+0-dev"
 core = "7.x"
 project = "flag_abuse"
-datestamp = "1353011150"
+datestamp = "1355964967"
 

@@ -1,4 +1,4 @@
-(function ($, Drupal, window, document, undefined) {
+(function ($, Drupal) {
 
 "use strict";
 
@@ -18,12 +18,6 @@ Drupal.behaviors.alohaTextareas = {
         // Directly attach this editor, if the input format is enabled.
         if (format.status) {
           Drupal.aloha.attach($editable, format);
-
-          // Activate the first Aloha Editor.
-          if (first) {
-            Drupal.aloha.activate($editable);
-            first = false;
-          }
         }
 
         // React appropriately to changed input formats.
@@ -54,4 +48,4 @@ Drupal.behaviors.alohaTextareas = {
   }
 };
 
-})(jQuery, Drupal, this, this.document);
+})(jQuery, Drupal);

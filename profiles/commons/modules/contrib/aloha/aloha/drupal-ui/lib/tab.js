@@ -353,11 +353,6 @@ define([
             return;
           }
         }
-
-        // It doesn't make any sense to leave the toolbar
-        // visible after all tabs have been hidden.
-        // @todo
-        // this.container.hide();
       }
     }
 

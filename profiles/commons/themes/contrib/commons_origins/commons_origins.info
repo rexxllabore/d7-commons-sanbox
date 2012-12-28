@@ -60,6 +60,7 @@
 
   scripts[] = scripts/modernizr.js
   scripts[] = scripts/jquery.formalize.min.js
+  scripts[] = scripts/jquery.selectBox.min.js
   scripts[] = scripts/commons_origins.js
 
   ; Internet Explorer Scripts
@@ -427,8 +428,8 @@ datestamp = "1343717778"
 
 
 
-; Information added by drush on 2012-11-15
+; Information added by drush on 2012-12-20
 version = ""
 project = "commons_origins"
-datestamp = "1353011131"
+datestamp = "1355964939"
 

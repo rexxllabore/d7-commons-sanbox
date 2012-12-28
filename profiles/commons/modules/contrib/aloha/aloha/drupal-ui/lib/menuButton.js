@@ -88,7 +88,7 @@ define([
 
     expand.append(menu);
 
-    menu.append(makeNestedMenus(makeCloseHandler(menu), props.menu));
+    menu.append(makeNestedMenus(makeCloseHandler(menu), props.menu, props));
 
     menu.hide().menu({
       'select': onSelect
@@ -97,8 +97,9 @@ define([
     return expand;
   };
 
-  function makeNestedMenus (parentCloseHandler, menu) {
+  function makeNestedMenus (parentCloseHandler, menu, obj) {
     var elems = [];
+    obj.items = {};
     $.each(menu, function (_, item) {
       var elem = $('<li>');
       elem.append($('<a>', {'href': '', 'html': Utils.makeButtonLabelWithIcon(item)}));
@@ -114,6 +115,7 @@ define([
           makeNestedMenus(makeCloseHandler(nestedMenu, parentCloseHandler),
             item.menu));
       }
+      obj.items[item.name] = { element: elem, visible: true };
       elems.push(elem[0]);
     });
     return elems;

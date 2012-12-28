@@ -91,8 +91,8 @@ rm -rf $TARGETDIR/plugins/common/ui/css
 rm -rf $TARGETDIR/plugins/common/ui/img
 
 # Remove important things we don't need.
-rm -rf $TARGETDIR/aloha-jquery-noconflict.js
-rm -rf $TARGETDIR/text.js
+rm -rf $TARGETDIR/lib/aloha-jquery-noconflict.js
+rm -rf $TARGETDIR/lib/text.js
 
 
 

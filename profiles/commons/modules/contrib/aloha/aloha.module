@@ -6,11 +6,10 @@
  */
 
 /**
- * @todo Improve Aloha Editor build for Drupal.
- * @see http://drupal.org/node/1782348
+ * @todo POST_COMMIT(Aloha Editor, https://github.com/alohaeditor/Aloha-Editor/issues/737, http://drupal.org/node/1782348)
+ * Improve Aloha Editor build for Drupal.
  */
 
-// @todo Establish a versioning scheme for our custom build.
 const ALOHA_VERSION = 'custom build: 0.22.2+dev at f9b2a7679abc913e4ccf16ce4bccacd8c998b592';
 
 /**
@@ -22,14 +21,14 @@ function aloha_menu() {
     'page arguments' => array(3),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-    'file' => 'includes/pages.inc',
+    'file' => 'aloha.pages.inc',
   );
   $items['aloha/repository/image/%'] = array(
     'page callback' => 'aloha_repository_image',
     'page arguments' => array(3),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-    'file' => 'includes/pages.inc',
+    'file' => 'aloha.pages.inc',
   );
   return $items;
 }
@@ -48,16 +47,6 @@ function aloha_library() {
     'version' => VERSION,
     'js' => array(
       $module_path . '/js/drupal.aloha.textarea.js' => array(),
-      array(
-        'type' => 'setting',
-        'data' => array('aloha' => array('settings' => array(
-          // Allow other modules, e.g. the Edit module, to embed the rendered
-          // toolbar within their own DOM infrastructure.
-          'DrupalUI' => array(
-            'renderOwnToolbarContainer' => TRUE,
-          ),
-        ))),
-      ),
     ),
     'dependencies' => array(
       array('aloha', 'aloha'),
@@ -96,7 +85,7 @@ function aloha_library() {
   // be loaded should hook_library_alter() this library and inject their own
   // dependencies.
   // Look at Drupal.settings.aloha.settings.plugins.load (this is identical to
-  // Aloha.settings.plugins) to see the fullly expanded list of Aloha Editor
+  // Aloha.settings.plugins) to see the fully expanded list of Aloha Editor
   // plug-ins that will be loaded.
   $libraries['aloha'] = array(
     'title' => 'Pseudo-library that depends on the core of Aloha Editor and contains a list of all Aloha Editor plug-ins that should be loaded.',
@@ -204,18 +193,7 @@ function aloha_library() {
         'data' => array('aloha' => array('settings' => array(
           'plugins' => array(
             'load' => array('common/format'),
-            // Note: the DrupalContentHandler plug-in will ensure that only tags
-            // specified in the editable's data-edit-allowed-tags attribute will
-            // be allowed. Here, we must specify the whole range of available
-            // HTML tags.
-            'format' => array('config' => array(
-              // Inline HTML elements.
-              'strong', 'em', 'b', 'i', 'u', 's', 'sub', 'sup',
-              // Block-level HTML elements.
-              'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre',
-              // Non-HTML.
-              'removeFormat',
-            )),
+            'format' => array('config' => array()),
           ),
         ))),
     ),
@@ -245,7 +223,7 @@ function aloha_library() {
         'data' => array('aloha' => array('settings' => array(
           'plugins' => array(
             'load' => array('common/list'),
-            'list' => array('config' => array('ul', 'ol')),
+            'list' => array('config' => array()),
           ),
         ))),
       ),
@@ -259,6 +237,7 @@ function aloha_library() {
         'type' => 'setting',
         'data' => array('aloha' => array('settings' => array(
           'plugins' => array('load' => array('common/contenthandler')),
+          'contentHandler' => array(),
         ))),
       ),
     ),
@@ -315,6 +294,7 @@ function aloha_library() {
           'plugins' => array(
             'load' => array('common/link'),
             'link' => array(
+              'config' => array(),
               'objectTypeFilter' => array('website'),
             )),
         ))),
@@ -344,6 +324,7 @@ function aloha_library() {
             'plugins' => array(
               'load' => array('common/image'),
               'image' => array(
+                'config' => array(),
                 'objectTypeFilter' => array('image'),
                 'fixedAspectRatio' => TRUE,
                 'ui' => array(
@@ -361,7 +342,7 @@ function aloha_library() {
 
   // Aloha Editor: "drupal" bundle of plug-ins (shipped with this module).
   $libraries['aloha.drupal'] = array(
-    'title' => 'Register the "drupal" bundle, this is the bundle that ships with this module, the "Aloha" module.',
+    'title' => '"Drupal" plugin bundle.',
     'version' => VERSION,
     'js' => array(
       array(
@@ -373,7 +354,7 @@ function aloha_library() {
     ),
   );
   $libraries['aloha.drupal/drupal'] = array(
-    'title' => '"Drupal" Aloha Editor plug-in: contenthandler + link repository',
+    'title' => '"Drupal" Aloha Editor plug-in: link and image repositories.',
     'version' => VERSION,
     'js' => array(
       array(
@@ -394,21 +375,12 @@ function aloha_library() {
               ),
             ),
           ),
-          'contentHandler' => array(
-            'insertHtml' => array('word', 'generic', 'drupal'),
-            'handler' => array(
-              'generic' => array('transformFormattings' => FALSE),
-            ),
-            'initEditable' => array(),
-          ),
         ))),
       ),
     ),
     'dependencies' => array(
       // Ensure the "aloha" bundle is registered.
       array('aloha', 'aloha.drupal'),
-      // This plug-in ships with a custom content handler.
-      array('aloha', 'aloha.common/contenthandler'),
     )
   );
   $ui_path = $module_path . '/aloha/drupal-ui/lib';
@@ -526,53 +498,200 @@ function aloha_pre_render_text_format($element) {
 }
 
 /**
- * Adds Drupal.settings.aloha.formats and Aloha.settings.plugins.drupal. Ensures
- * Aloha Editor has the metadata to deal with formats.
+ * Implements hook_filter_format_update().
+ */
+function aloha_filter_format_update($format) {
+  cache_clear_all('aloha-allowed-html:' . $format->format, 'cache_filter');
+}
+
+/**
+ * Get a allowed HTML tags and attributes using blackbox testing.
+ *
+ * @param string $format_id
+ *   A text format ID.
+ * @return array
+ *   An array of which the keys list all allowed tags and the corresponding
+ *   values list the allowed attributes. An empty array as value means no
+ *   attributes are allowed, array('*') means all attributes are allowed. In
+ *   other cases, it's an enumeration of the allowed attributes, plus "data-" if
+ *   any data- attribute is allowed.
+ */
+function aloha_get_allowed_html_by_format($format_id) {
+  $cache_id = 'aloha-allowed-html:' . $format_id;
+  if ($cached = cache_get($cache_id, 'cache_filter')) {
+    return $cached->data;
+  }
+
+  module_load_include('inc', 'aloha', 'aloha.format');
+  $allowed_html = _aloha_calculate_allowed_html($format_id);
+  cache_set($cache_id, $allowed_html, 'cache_filter');
+
+  return $allowed_html;
+}
+
+/**
+ * Check the compatibility of Aloha Editor with a given text format.
+ *
+ * Aloha Editor can only work if the br and p tags are allowed by the text
+ * format and only HTML is used, i.e. no markup language filters are used.
+ *
+ * @param string $format_id
+ *   A text format id.
+ *
+ * @return array
+ *   An array with the following keys:
+ *    - 'filters compatible': whether the filters in the text format are
+ *      compatible
+ *    - 'necessary tags allowed': whether the tags for Aloha Editor to function
+ *      are allowed by the text format
+ *    - 'verdict': whether this text format is compatible with Aloha Editor
+ *      based on the two measures above
+ */
+function _aloha_check_format_compatibility_detailed($format_id) {
+  $filter_types = filter_get_filter_types_by_format($format_id);
+  $allowed_html = aloha_get_allowed_html_by_format($format_id);
+  $allowed_tags = array_keys($allowed_html);
+
+  $filters_compatible = (!in_array(FILTER_TYPE_MARKUP_LANGUAGE, $filter_types));
+  $necessary_tags_allowed = (in_array('br', $allowed_tags) && in_array('p', $allowed_tags));
+
+  return array(
+    'filters compatible' => $filters_compatible,
+    'necessary tags allowed' => $necessary_tags_allowed,
+    'verdict' => $filters_compatible && $necessary_tags_allowed,
+  );
+}
+
+/**
+ * Check the compatibility of Aloha Editor with a given text format.
+ *
+ * @see _aloha_check_format_compatibility_detailed()
+ */
+function aloha_check_format_compatibility($format_id) {
+  $compatibility = _aloha_check_format_compatibility_detailed($format_id);
+  return $compatibility['verdict'];
+}
+
+/**
+ * Ensures Aloha Editor has the metadata to deal with formats.
+ *
+ * Adds Drupal.settings.aloha.formats and Aloha.settings.plugins.drupal.
+ *
+ * @todo POST_COMMIT(Aloha Editor, https://github.com/alohaeditor/Aloha-Editor/issues/794).
+ * Revisit mapping when this Aloha issue is solved.
  */
 function aloha_add_format_settings() {
   $format_settings_added = &drupal_static(__FUNCTION__, FALSE);
 
   if (!$format_settings_added) {
+    $plugins = array('format', 'list', 'link', 'cite', 'align', 'image');
+    // Mapping from HTML element to Aloha Editor plug-in.
+    $tag_mapping = array(
+      'a' => 'link',
+      // Drupal does not allow <b>.
+      'b' => FALSE,
+      'blockquote' => 'cite',
+      'br' => 'format',
+      'cite' => 'cite',
+      'code' => 'format',
+      'em' => 'format',
+      'h1' => 'format',
+      'h2' => 'format',
+      'h3' => 'format',
+      'h4' => 'format',
+      'h5' => 'format',
+      'h6' => 'format',
+      // Drupal does not allow <i>.
+      'i' => FALSE,
+      'img' => 'image',
+      'li' => 'list',
+      'ol' => 'list',
+      'p' => 'format',
+      'q' => 'cite',
+      'pre' => 'format',
+      's' => 'format',
+      'strong' => 'format',
+      'sub' => 'format',
+      'sup' => 'format',
+      'u' => 'format',
+      'ul' => 'list',
+      'u' => 'format',
+    );
+    // Special cases.
+    $tag_mapping['removeFormat'] = 'format';
+    $attr_mapping = array(
+      'p' => array('style' => array(array('align', array('left', 'right', 'center', 'justify')))),
+    );
+
     global $user;
     $formats = filter_formats($user);
-
     $settings['formats'] = array();
-    $settings['settings']['plugins']['drupal'] = array();
 
     // Gather all necessary metadata for each format available to the current
     // user.
-    // @todo filter_get_filter_types_by_format() and filter_get_allowed_tags_by_format()
-    // are provided by http://drupal.org/node/1782838
     foreach (array_keys($formats) as $format_id) {
-      $filter_types = filter_get_filter_types_by_format($format_id);
-      $allowed_tags = filter_get_allowed_tags_by_format($format_id);
-      $no_disallowed_tags = $allowed_tags === TRUE;
-      $necessary_tags_allowed = $no_disallowed_tags || (in_array('br', $allowed_tags) && in_array('p', $allowed_tags));
       $class = 'text-format-' . drupal_html_class($format_id);
+      $allowed_html = aloha_get_allowed_html_by_format($format_id);
+
+      // Let drupal.aloha.js know which text formats are compatible and which
+      // class name should be set on the editable.
       $settings['formats'][$format_id] = array(
         'id' => $format_id,
-        // Aloha Editor should only be enabled if no "HTML generator" filters
-        // are used in this format, and the <br> and <p> tags are allowed.
-        'status' => !in_array(FILTER_TYPE_HTML_GENERATOR, $filter_types)
-        && $necessary_tags_allowed,
+        // Only enable Aloha Editor if it is compatible with the text format.
+        'status' => aloha_check_format_compatibility($format_id),
         // The class that will be set on the editable whenever this text format
         // is active.
         'className' => $class,
       );
 
-      // For Aloha Editor to make sense in a Drupal context, we need to make
-      // sure that Aloha Editor works as well as possible with Drupal's filter
-      // system. Hence we developed the 'drupal' plug-in for Aloha Editor, which
-      // is able to adjust the UI and filter pasting based on the allowed tags
-      // of the current text format of the current editable.
-      // Whenever we use Aloha Editor within Drupal, it's in
-      // e.g. if the <em> tag is disallowed, it won't show the "I" button and
-      // pasted italic text will automatically be unitalicized.
-      // @todo: make this plug-in obsolete: http://drupal.org/node/1806492
-      if ($settings['formats'][$format_id]['status']) {
-        $settings['settings']['plugins']['drupal']['editables'][".$class"] = array(
-          'allowedTags' => $no_disallowed_tags ? array() : $allowed_tags,
-        );
+      // Let the relevant Aloha Editor plug-ins know which HTML tags are
+      // allowed by this text format. Aloha Editor will only show the buttons
+      // for the allowed HTML tags.
+      // However, by default, explicitly disallow plug-ins from using defaults
+      // by setting an empty array.
+      foreach ($plugins as $plugin) {
+        $settings['settings']['plugins'][$plugin]['editables']['.' . $class] = array();
+      }
+      $tags = array_keys($allowed_html);
+      foreach ($tags as $tag) {
+        if (!isset($tag_mapping[$tag])) {
+          continue;
+        }
+        $plugin = $tag_mapping[$tag];
+        if ($plugin === FALSE) {
+          continue;
+        }
+        $settings['settings']['plugins'][$plugin]['editables']['.' . $class][] = $tag;
+        // For some, there is also an attribute mapping.
+        if (isset($attr_mapping[$tag])) {
+          $attrs = array_keys($attr_mapping[$tag]);
+          $allowed_attrs = $allowed_html[$tag];
+          if ($format_id == 'filtered_html') {
+          $allowed_attrs = array();
+        }
+          if ($allowed_attrs === array('*')) {
+            $allowed_attrs = $attrs;
+          }
+          foreach ($attrs as $attr) {
+            if (in_array($attr, $allowed_attrs)) {
+              foreach ($attr_mapping[$tag][$attr] as $config_for_plugin) {
+                list($plugin, $config) = $config_for_plugin;
+                $settings['settings']['plugins'][$plugin]['editables']['.' . $class] = $config;
+              }
+            }
+          }
+        }
+      }
+
+      // Let Aloha Editor's "sanitize" content handler know which HTML tags and
+      // attributes are allowed by this text format. Aloha Editor will then
+      // ensure that when pasting content, nothing in the pasted content that is
+      // disallowed will continue to exist.
+      foreach ($allowed_html as $tag => $attributes) {
+        $settings['settings']['contentHandler']['handler']['sanitize']['.' . $class]['elements'][] = $tag;
+        if ($attributes !== array('*')) {
+          $settings['settings']['contentHandler']['handler']['sanitize']['.' . $class]['attributes'][$tag] = $attributes;
+        }
       }
     }
 

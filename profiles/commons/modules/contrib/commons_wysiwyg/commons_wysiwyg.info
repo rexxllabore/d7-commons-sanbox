@@ -17,8 +17,8 @@ features[user_permission][] = use text format filtered_html
 features[variable][] = jquery_update_jquery_version
 
 
-; Information added by drush on 2012-11-15
+; Information added by drush on 2012-12-20
 version = ""
 project = "commons_wysiwyg"
-datestamp = "1353011130"
+datestamp = "1355964919"
 

@@ -49,6 +49,7 @@ $green: rgb(70,186,49);
 $dark_blue: rgb(51,102,153);
 $light_blue: rgb(39,131,185);
 $orange: rgb(255,153,0);
+$lighter_gray: #eee;
 
 
 //
@@ -83,9 +84,16 @@ $gutter-width: 10px;
 
 // global chunck of code for importing
 
-.divider-left {
-  border-left: 1px solid #4082A7;
-  @include box-shadow(#0F4363 -1px 0px 0px);
+$icons: sprite-map('icons/*.png', $spacing: 20px);
+
+@mixin sprite_url_height_width($sprite_name, $image_name) {
+  background: sprite($sprite_name, $image_name) no-repeat;
+  width: image-width(sprite-file($sprite_name, $image_name));
+  height: image-height(sprite-file($sprite_name, $image_name));
+  display: inline-block;
+  margin-right: 3px;
+  position: relative;
+  top: 1px;
 }
 
 
